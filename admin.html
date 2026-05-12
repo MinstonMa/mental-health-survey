@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>问卷管理后台</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+  }
+  .login-wrap {
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+  }
+  .login-box {
+    background: #fff; padding: 40px; border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1); width: 360px;
+    text-align: center;
+  }
+  .login-box h1 { font-size: 20px; margin-bottom: 24px; color: #1a73e8; }
+  .login-box input {
+    width: 100%; padding: 12px 16px; border: 1px solid #d0d0d0;
+    border-radius: 6px; font-size: 15px; margin-bottom: 16px;
+    outline: none;
+  }
+  .login-box input:focus { border-color: #1a73e8; }
+  .login-box button {
+    width: 100%; padding: 12px; background: #1a73e8; color: #fff;
+    border: none; border-radius: 6px; font-size: 15px; cursor: pointer;
+  }
+  .login-box button:hover { background: #1557b0; }
+  .login-error { color: #d32f2f; font-size: 13px; margin-top: 8px; display: none; }
+
+  .admin-wrap { display: none; }
+  .top-bar {
+    background: #1a73e8; color: #fff; padding: 16px 28px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .top-bar h1 { font-size: 18px; }
+  .top-bar .stats { font-size: 14px; opacity: 0.9; }
+  .top-bar button {
+    padding: 8px 20px; background: rgba(255,255,255,0.2); color: #fff;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+    font-size: 13px; cursor: pointer;
+  }
+  .top-bar button:hover { background: rgba(255,255,255,0.3); }
+
+  .content { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+  .chart-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .chart-card {
+    background: #fff; border-radius: 8px; padding: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .chart-card h3 { font-size: 14px; color: #555; margin-bottom: 8px; }
+  .chart-card canvas { max-height: 280px; }
+
+  .tab-bar {
+    display: flex; gap: 0; margin-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  .tab-bar button {
+    padding: 10px 24px; background: none; border: none;
+    font-size: 14px; cursor: pointer; color: #666;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+  }
+  .tab-bar button.active { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }
+  .tab-bar button:hover { color: #1a73e8; }
+
+  .data-table-wrap {
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow-x: auto; display: none; padding: 16px;
+  }
+  .data-table-wrap.active { display: block; }
+  .data-table-wrap table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .data-table-wrap th {
+    background: #f5f8ff; text-align: left; padding: 10px 12px;
+    white-space: nowrap; border-bottom: 2px solid #e0e0e0;
+    position: sticky; top: 0;
+  }
+  .data-table-wrap td {
+    padding: 8px 12px; border-bottom: 1px solid #f0f0f0;
+    max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .data-table-wrap tr:hover td { background: #fafbff; }
+  .data-table-wrap .scroll-wrap {
+    max-height: 600px; overflow-y: auto;
+  }
+
+  .toolbar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .toolbar button {
+    padding: 8px 18px; background: #1a73e8; color: #fff;
+    border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+  }
+  .toolbar button:hover { background: #1557b0; }
+  .toolbar .count { font-size: 14px; color: #666; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: #999;
+  }
+  .empty-state h2 { font-size: 18px; margin-bottom: 8px; color: #555; }
+  .loading { text-align: center; padding: 60px; color: #666; }
+
+  .individual-wrap { display: none; }
+  .individual-wrap.active { display: block; }
+  .response-card {
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 20px; margin-bottom: 12px;
+  }
+  .response-card .q-row {
+    display: flex; gap: 12px; padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0; font-size: 13px;
+  }
+  .response-card .q-label { color: #888; min-width: 80px; flex-shrink: 0; }
+  .response-card .q-answer { flex: 1; }
+  .response-card .q-number { color: #999; width: 30px; flex-shrink: 0; }
+
+  .module-filter {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .module-filter button {
+    padding: 4px 14px; border-radius: 14px; border: 1px solid #c4d7f5;
+    background: #fff; color: #1a73e8; font-size: 12px; cursor: pointer;
+  }
+  .module-filter button.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+  .module-filter button:hover { background: #e8f0fe; }
+  .module-filter button.active:hover { background: #1557b0; }
+
+  @media (max-width: 600px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .data-table-wrap { font-size: 12px; }
+    .top-bar { flex-wrap: wrap; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <h1>问卷管理后台</h1>
+    <p style="font-size:13px;color:#888;margin-bottom:20px;">哈尔滨市高中生心理健康现状调研问卷</p>
+    <input type="password" id="pwdInput" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()">登录</button>
+    <div class="login-error" id="loginError">密码错误，请重试</div>
+  </div>
+</div>
+
+<div class="admin-wrap" id="adminWrap">
+  <div class="top-bar">
+    <div>
+      <h1>问卷管理后台</h1>
+      <div class="stats">共 <span id="totalCount">0</span> 份回答</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="exportAllCSV()">导出所有回答 CSV</button>
+      <button onclick="logout()" style="background:rgba(255,255,255,0.1);">退出登录</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="toolbar">
+      <button onclick="refreshData()">刷新数据</button>
+      <span class="count" id="responseCount">加载中...</span>
+    </div>
+
+    <div class="tab-bar">
+      <button class="active" onclick="switchTab('charts',this)">统计图表</button>
+      <button onclick="switchTab('table',this)">数据表格</button>
+      <button onclick="switchTab('individual',this)">逐份查看</button>
+    </div>
+
+    <div id="chartsTab" class="chart-grid"></div>
+
+    <div id="tableTab" class="data-table-wrap">
+      <div class="scroll-wrap" id="tableBody"></div>
+    </div>
+
+    <div id="individualTab" class="individual-wrap">
+      <div class="module-filter" id="indivFilter"></div>
+      <div id="individualBody"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://tlsdhlbtauqgczyvwers.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_OvcR4xbJVrZ-7Dtnc5O5OA_slhJFlRK';
+const ADMIN_PASSWORD = 'mh2025hrb';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const questions = {
+  1:'性别',2:'年级',3:'学校类型',4:'独生子女',5:'居住地',6:'住校',
+  7:'每日学习时长',8:'学业压力',9:'考试焦虑',10:'睡眠时长',11:'睡眠质量',12:'睡眠影响因素',13:'自我要求',
+  14:'心理咨询了解度',15:'咨询意愿',16:'不愿咨询原因',17:'求助对象',18:'学校重视度',19:'课程参与度',20:'期望支持',
+  21:'亲子关系',22:'家长成绩关注',23:'家长心理关注',24:'教育方式',25:'家庭氛围',26:'沟通频率',
+  27:'情绪状态',28:'情绪稳定性',29:'心理困扰来源',30:'同伴关系',31:'孤独感',32:'整体心理状态',
+  33:'期望帮助',34:'改进建议',35:'其他想法'
+};
+
+const singleChoice = [1,2,3,4,5,6,7,10,13,14,15,17,19,24,25,26,31];
+const multiChoice = [12,16,20,27,29];
+const rating1_5 = [8,9,11,18,21,22,23,28,30];
+const rating1_10 = [32];
+const textQs = [33,34,35];
+
+const moduleNames = ['基本信息','学业压力与睡眠','心理支持','家庭因素','社交与情绪','开放性问题'];
+const moduleQuestions = {
+  '基本信息':[1,2,3,4,5,6],
+  '学业压力与睡眠':[7,8,9,10,11,12,13],
+  '心理支持':[14,15,16,17,18,19,20],
+  '家庭因素':[21,22,23,24,25,26],
+  '社交与情绪':[27,28,29,30,31,32],
+  '开放性问题':[33,34,35]
+};
+
+let allData = [];
+let charts = [];
+
+function doLogin() {
+  const pwd = document.getElementById('pwdInput').value;
+  if (pwd === ADMIN_PASSWORD) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('adminWrap').style.display = 'block';
+    refreshData();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function logout() {
+  document.getElementById('adminWrap').style.display = 'none';
+  document.getElementById('loginWrap').style.display = '';
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+async function refreshData() {
+  document.getElementById('responseCount').textContent = '加载中...';
+  document.getElementById('chartsTab').innerHTML = '<div class="loading">加载中...</div>';
+  try {
+    const { data, error } = await supabase.from('responses').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    allData = data || [];
+    document.getElementById('totalCount').textContent = allData.length;
+    document.getElementById('responseCount').textContent = '共 ' + allData.length + ' 份回答';
+    renderCharts();
+    renderTable();
+    renderIndividual();
+  } catch (e) {
+    document.getElementById('responseCount').textContent = '加载失败: ' + e.message;
+    document.getElementById('chartsTab').innerHTML = '<div class="empty-state"><h2>加载失败</h2><p>' + e.message + '</p></div>';
+  }
+}
+
+function getVal(d, qid) {
+  const v = d.data && d.data[qid];
+  return v !== undefined && v !== null && v !== '' ? v : null;
+}
+
+function countValues(qid) {
+  const counts = {};
+  let total = 0;
+  allData.forEach(d => {
+    const v = getVal(d, qid);
+    if (v === null) return;
+    total++;
+    if (Array.isArray(v)) {
+      v.forEach(item => { counts[item] = (counts[item] || 0) + 1; });
+    } else {
+      counts[String(v)] = (counts[String(v)] || 0) + 1;
+    }
+  });
+  return { counts, total };
+}
+
+function avgValue(qid) {
+  let sum = 0, n = 0;
+  allData.forEach(d => {
+    const v = getVal(d, qid);
+    if (v !== null && !isNaN(v)) { sum += Number(v); n++; }
+  });
+  return n > 0 ? (sum / n).toFixed(1) : '-';
+}
+
+function renderCharts() {
+  const container = document.getElementById('chartsTab');
+  charts.forEach(c => c.destroy());
+  charts = [];
+  container.innerHTML = '';
+
+  if (allData.length === 0) {
+    container.innerHTML = '<div class="empty-state"><h2>暂无数据</h2><p>还没有人提交问卷</p></div>';
+    return;
+  }
+
+  const chartConfigs = [
+    { title: '性别分布', qid: 1, type: 'pie' },
+    { title: '年级分布', qid: 2, type: 'pie' },
+    { title: '学业压力程度（均分：', qid: 8, type: 'bar', avg: true },
+    { title: '考试焦虑程度（均分：', qid: 9, type: 'bar', avg: true },
+    { title: '睡眠时长分布', qid: 10, type: 'pie' },
+    { title: '睡眠质量（均分：', qid: 11, type: 'bar', avg: true },
+    { title: '主要睡眠影响因素', qid: 12, type: 'bar' },
+    { title: '心理咨询意愿', qid: 15, type: 'pie' },
+    { title: '求助对象', qid: 17, type: 'pie' },
+    { title: '学校重视度（均分：', qid: 18, type: 'bar', avg: true },
+    { title: '亲子关系（均分：', qid: 21, type: 'bar', avg: true },
+    { title: '家长成绩关注度（均分：', qid: 22, type: 'bar', avg: true },
+    { title: '教育方式分布', qid: 24, type: 'pie' },
+    { title: '心理困扰来源', qid: 29, type: 'bar' },
+    { title: '孤独感分布', qid: 31, type: 'pie' },
+    { title: '整体心理状态（均分：', qid: 32, type: 'bar', avg: true },
+  ];
+
+  chartConfigs.forEach(cfg => {
+    const { counts, total } = countValues(cfg.qid);
+    if (total === 0) return;
+
+    const keys = Object.keys(counts);
+    const card = document.createElement('div');
+    card.className = 'chart-card';
+
+    let title = cfg.title;
+    if (cfg.avg) {
+      const avg = avgValue(cfg.qid);
+      title += avg + '/5）';
+      if (cfg.qid === 32) title = title.replace('/5', '/10');
+    }
+    card.innerHTML = '<h3>' + title + ' <span style="font-weight:400;color:#999;font-size:12px;">(' + total + '人)</span></h3><canvas></canvas>';
+    container.appendChild(card);
+
+    const canvas = card.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const labels = keys;
+    const values = keys.map(k => counts[k]);
+    const colors = ['#1a73e8','#e8710a','#43a047','#e53935','#8e24aa','#00acc1','#fdd835','#6d4c41','#fb8c00','#3949ab','#c0ca33','#00897b'];
+
+    if (cfg.type === 'pie') {
+      const c = new Chart(ctx, {
+        type: 'pie',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+      charts.push(c);
+    } else {
+      const c = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: colors.slice(0, labels.length),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+      charts.push(c);
+    }
+  });
+}
+
+function renderTable() {
+  const container = document.getElementById('tableBody');
+  if (allData.length === 0) {
+    container.innerHTML = '<div class="empty-state"><h2>暂无数据</h2></div>';
+    return;
+  }
+
+  const qids = Object.keys(questions).map(Number);
+  let html = '<table><thead><tr><th>#</th><th>提交时间</th>';
+  qids.forEach(id => { html += '<th>' + id + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  allData.forEach((d, idx) => {
+    const time = new Date(d.created_at).toLocaleString('zh-CN');
+    html += '<tr><td>' + (idx + 1) + '</td><td>' + time + '</td>';
+    qids.forEach(id => {
+      const v = getVal(d, id);
+      if (v === null) html += '<td></td>';
+      else if (Array.isArray(v)) html += '<td>' + v.join('; ') + '</td>';
+      else html += '<td>' + v + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function renderIndividual() {
+  const filterContainer = document.getElementById('indivFilter');
+  const body = document.getElementById('individualBody');
+
+  let filterHtml = '<button class="active" data-mod="all" onclick="filterIndividual(\'all\',this)">全部</button>';
+  moduleNames.forEach(m => {
+    filterHtml += '<button data-mod="' + m + '" onclick="filterIndividual(\'' + m + '\',this)">' + m + '</button>';
+  });
+  filterContainer.innerHTML = filterHtml;
+
+  if (allData.length === 0) {
+    body.innerHTML = '<div class="empty-state"><h2>暂无数据</h2></div>';
+    return;
+  }
+  renderIndividualList('all');
+}
+
+let currentIndivFilter = 'all';
+function filterIndividual(mod, btn) {
+  currentIndivFilter = mod;
+  document.querySelectorAll('#indivFilter button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderIndividualList(mod);
+}
+
+function renderIndividualList(mod) {
+  const body = document.getElementById('individualBody');
+  body.innerHTML = '';
+
+  const showQids = mod === 'all'
+    ? Object.keys(questions).map(Number)
+    : moduleQuestions[mod] || [];
+
+  allData.forEach((d, idx) => {
+    const card = document.createElement('div');
+    card.className = 'response-card';
+    const time = new Date(d.created_at).toLocaleString('zh-CN');
+    let html = '<div style="font-size:12px;color:#999;margin-bottom:8px;">#' + (idx + 1) + ' · ' + time + '</div>';
+
+    showQids.forEach(qid => {
+      const v = getVal(d, qid);
+      let display = '';
+      if (v === null) display = '<span style="color:#ccc;">未回答</span>';
+      else if (Array.isArray(v)) display = v.join('; ');
+      else display = v;
+      html += '<div class="q-row"><span class="q-number">' + qid + '.</span><span class="q-label">' + questions[qid] + '</span><span class="q-answer">' + display + '</span></div>';
+    });
+    card.innerHTML = html;
+    body.appendChild(card);
+  });
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.data-table-wrap, .individual-wrap, .chart-grid').forEach(el => el.classList.remove('active'));
+  if (tab === 'charts') document.getElementById('chartsTab').classList.add('active');
+  else if (tab === 'table') document.getElementById('tableTab').classList.add('active');
+  else if (tab === 'individual') document.getElementById('individualTab').classList.add('active');
+}
+
+function exportAllCSV() {
+  if (allData.length === 0) { alert('暂无数据可导出'); return; }
+  const qids = Object.keys(questions).map(Number);
+  const BOM = '﻿';
+  let csv = BOM + '编号,提交时间';
+  qids.forEach(id => { csv += ',' + id + '.' + questions[id]; });
+  csv += '\n';
+
+  allData.forEach((d, idx) => {
+    const time = new Date(d.created_at).toLocaleString('zh-CN');
+    csv += idx + 1 + ',"' + time + '"';
+    qids.forEach(id => {
+      const v = getVal(d, id);
+      let display = '';
+      if (v === null) display = '';
+      else if (Array.isArray(v)) display = v.join('; ');
+      else display = String(v);
+      csv += ',"' + display.replace(/"/g, '""') + '"';
+    });
+    csv += '\n';
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '问卷结果_所有回答.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

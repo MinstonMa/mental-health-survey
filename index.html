@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>哈尔滨市高中生心理健康现状调研问卷</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -554,9 +555,33 @@ function validateAll() {
   return ok;
 }
 
-function submitSurvey() {
-  // validate current module (last one: open questions are not required, so fine)
+const SUPABASE_URL = 'https://tlsdhlbtauqgczyvwers.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_OvcR4xbJVrZ-7Dtnc5O5OA_slhJFlRK';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function submitSurvey() {
   if (!validateModule(currentModule)) return;
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.disabled = true;
+  nextBtn.textContent = '提交中...';
+
+  try {
+    const responseData = {};
+    data.modules.forEach(m => {
+      m.questions.forEach(q => {
+        responseData[q.id] = answers[qId(q)] || (q.type === '多选' ? [] : '');
+      });
+    });
+
+    const { error } = await supabase.from('responses').insert({ data: responseData });
+    if (error) throw error;
+  } catch (e) {
+    alert('提交失败，请检查网络后重试。\n' + e.message);
+    nextBtn.disabled = false;
+    nextBtn.textContent = '提交问卷';
+    return;
+  }
 
   document.getElementById('surveyBody').style.display = 'none';
   document.getElementById('moduleNav').style.display = 'none';
