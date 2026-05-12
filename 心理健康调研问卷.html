@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈尔滨市高中生心理健康现状调研问卷</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #e8f0fe;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: #fff;
+    padding: 32px 28px;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+  }
+  .header h1 { font-size: 22px; margin-bottom: 8px; letter-spacing: 1px; }
+  .header p { font-size: 14px; opacity: 0.9; line-height: 1.8; }
+  .progress-bar-wrap {
+    background: #fff;
+    padding: 16px 28px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .progress-info {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: #666; margin-bottom: 6px;
+  }
+  .progress-track {
+    height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: #1a73e8; border-radius: 3px;
+    transition: width 0.4s ease; width: 0%;
+  }
+  .module-nav {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 14px 28px; background: #f5f8ff;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .module-btn {
+    padding: 6px 14px; border-radius: 14px; border: 1px solid #c4d7f5;
+    background: #fff; color: #1a73e8; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .module-btn:hover { background: #e8f0fe; }
+  .module-btn.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+  .module-section { display: none; }
+  .module-section.active { display: block; }
+  .question-card {
+    background: #fff; padding: 24px 28px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .q-title {
+    font-size: 15px; font-weight: 600; margin-bottom: 12px;
+  }
+  .q-title .required { color: #d32f2f; margin-left: 2px; }
+  .q-type-badge {
+    display: inline-block; font-size: 11px; padding: 1px 8px;
+    border-radius: 10px; background: #e8f0fe; color: #1a73e8;
+    margin-left: 8px; font-weight: 400; vertical-align: middle;
+  }
+  .options { padding-left: 4px; }
+  .option-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 6px;
+    cursor: pointer; transition: background 0.15s;
+    margin-bottom: 2px;
+  }
+  .option-item:hover { background: #f5f8ff; }
+  .option-item input[type="radio"],
+  .option-item input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: #1a73e8; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .option-item label { cursor: pointer; font-size: 14px; flex: 1; }
+  .rating-row {
+    display: flex; gap: 0; margin: 8px 0;
+    flex-wrap: wrap;
+  }
+  .rating-item {
+    text-align: center; flex: 1; min-width: 50px;
+  }
+  .rating-item input { display: none; }
+  .rating-item label {
+    display: block; padding: 10px 0 6px;
+    background: #f5f8ff; border: 1px solid #dde8f5;
+    cursor: pointer; font-size: 18px; font-weight: 700; color: #555;
+    transition: all 0.15s;
+    margin: 0 -0.5px;
+  }
+  .rating-item label:hover { background: #dde8f5; }
+  .rating-item input:checked + label {
+    background: #1a73e8; color: #fff; border-color: #1a73e8;
+    position: relative; z-index: 1;
+  }
+  .rating-item:first-child label { border-radius: 6px 0 0 6px; }
+  .rating-item:last-child label { border-radius: 0 6px 6px 0; }
+  .rating-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: #888; margin-top: 2px;
+  }
+  .textarea-wrap textarea {
+    width: 100%; min-height: 90px; padding: 12px;
+    border: 1px solid #d0d0d0; border-radius: 6px;
+    font-size: 14px; font-family: inherit;
+    resize: vertical; transition: border-color 0.2s;
+  }
+  .textarea-wrap textarea:focus {
+    outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.15);
+  }
+  .footer-nav {
+    background: #fff; padding: 18px 28px;
+    display: flex; justify-content: space-between;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: sticky; bottom: 0;
+  }
+  .footer-nav button {
+    padding: 10px 32px; border-radius: 6px; font-size: 15px;
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-prev { background: #f0f0f0; color: #555; }
+  .btn-prev:hover { background: #e0e0e0; }
+  .btn-prev:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-next { background: #1a73e8; color: #fff; }
+  .btn-next:hover { background: #1557b0; }
+  .btn-submit { background: #43a047; color: #fff; }
+  .btn-submit:hover { background: #388e3c; }
+  .error-msg {
+    color: #d32f2f; font-size: 13px; margin-top: 6px;
+    display: none;
+  }
+  .result-page {
+    background: #fff; border-radius: 0 0 12px 12px;
+    padding: 40px 28px; display: none; text-align: center;
+  }
+  .result-page h2 { font-size: 22px; margin-bottom: 12px; color: #1a73e8; }
+  .result-page p { font-size: 14px; color: #666; margin-bottom: 20px; }
+  .result-summary {
+    background: #f5f8ff; border-radius: 8px; padding: 20px;
+    margin: 20px 0; text-align: left;
+  }
+  .result-summary table {
+    width: 100%; border-collapse: collapse; font-size: 14px;
+  }
+  .result-summary th, .result-summary td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .result-summary th { color: #555; font-weight: 500; }
+  .btn-export {
+    display: inline-block; padding: 10px 28px;
+    background: #1a73e8; color: #fff; border-radius: 6px;
+    border: none; font-size: 15px; cursor: pointer;
+    margin-top: 16px; text-decoration: none;
+  }
+  .btn-export:hover { background: #1557b0; }
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .header h1 { font-size: 18px; }
+    .rating-item { min-width: 36px; }
+    .rating-item label { font-size: 15px; padding: 8px 0 4px; }
+    .footer-nav button { padding: 8px 20px; font-size: 14px; }
+    .module-nav { padding: 10px 16px; }
+    .question-card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>哈尔滨市高中生心理健康现状调研问卷</h1>
+    <p>本问卷旨在了解哈尔滨市高中生的心理健康状况，为学校和社会提供有针对性的心理支持服务。<br>所有数据仅用于统计分析，匿名填写，请放心如实作答。感谢你的参与！</p>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-info">
+      <span id="progressText">已完成：0%</span>
+      <span id="progressCount">第 1 题 / 共 35 题</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="module-nav" id="moduleNav"></div>
+
+  <div id="surveyBody"></div>
+
+  <div class="footer-nav" id="footerNav">
+    <button class="btn-prev" id="prevBtn" onclick="prevModule()">上一模块</button>
+    <button class="btn-next" id="nextBtn" onclick="nextModule()">下一模块</button>
+  </div>
+
+  <div class="result-page" id="resultPage">
+    <h2>提交成功！</h2>
+    <p>感谢你认真完成这份问卷，你的每一份回答都很有价值。</p>
+    <div class="result-summary" id="resultSummary"></div>
+    <button class="btn-export" onclick="exportCSV()">导出回答为 CSV</button>
+    <br><br>
+    <button class="btn-next" onclick="resetSurvey()" style="padding:8px 24px;font-size:13px;">重新填写</button>
+  </div>
+</div>
+
+<script>
+const data = {
+  "title": "哈尔滨市高中生心理健康现状调研问卷",
+  "modules": [
+    {"id":1,"name":"基本信息","questions":[
+      {"id":1,"text":"你的性别是？","type":"单选","options":["男","女","其他"],"required":true},
+      {"id":2,"text":"你所在的年级是？","type":"单选","options":["高一","高二","高三","其他"],"required":true},
+      {"id":3,"text":"你就读的学校类型是？","type":"单选","options":["省重点高中","市重点高中","普通高中","民办高中","职业高中"],"required":true},
+      {"id":4,"text":"你是否为独生子女？","type":"单选","options":["是","否"],"required":true},
+      {"id":5,"text":"你的长期居住地属于？","type":"单选","options":["城市市区","县城","乡镇","农村"],"required":true},
+      {"id":6,"text":"你是否是住校生？","type":"单选","options":["是","否"],"required":true}
+    ]},
+    {"id":2,"name":"学业压力与睡眠","questions":[
+      {"id":7,"text":"你每天平均学习时长（含上课、自习、作业）约为？","type":"单选","options":["少于8小时","8-10小时","10-12小时","12小时以上"],"required":true},
+      {"id":8,"text":"你当前的学业压力程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全没有压力","2":"压力较轻","3":"中等压力","4":"压力较大","5":"压力极大"},"required":true},
+      {"id":9,"text":"你面临考试时的焦虑程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不焦虑","2":"不太焦虑","3":"一般","4":"比较焦虑","5":"非常焦虑"},"required":true},
+      {"id":10,"text":"你平均每晚的睡眠时长约为？","type":"单选","options":["不足5小时","5-6小时","6-7小时","7-8小时","8小时以上"],"required":true},
+      {"id":11,"text":"你对自己的睡眠质量如何评价？","type":"评分1-5","min":1,"max":5,"labels":{"1":"很差","2":"较差","3":"一般","4":"较好","5":"很好"},"required":true},
+      {"id":12,"text":"影响你睡眠的主要原因是什么？（可多选）","type":"多选","options":["学业压力大","熬夜学习或刷题","使用电子产品（手机/游戏等）","寝室或家庭环境干扰","心理焦虑失眠","无睡眠问题","其他"],"required":true},
+      {"id":13,"text":"你对自己的成绩有怎样的自我要求？","type":"单选","options":["要求很高，必须名列前茅","要求较高，希望中上水平","要求一般，中等即可","要求较低，及格就好","无所谓"],"required":true}
+    ]},
+    {"id":3,"name":"心理支持","questions":[
+      {"id":14,"text":"你是否了解学校提供的心理咨询服务？","type":"单选","options":["非常了解","基本了解","听说过但不太了解","完全不了解"],"required":true},
+      {"id":15,"text":"你是否有意愿使用学校的心理咨询服务？","type":"单选","options":["非常愿意","比较愿意","不确定","不太愿意","完全不愿意"],"required":true},
+      {"id":16,"text":"如果不愿意使用心理咨询服务，主要原因是什么？（可多选）","type":"多选","options":["担心被同学或老师知道","觉得没有什么效果","不知道预约和咨询流程","觉得问题不严重不需要","担心被贴上心理有问题的标签","更愿意自己消化或找朋友倾诉","其他"],"required":false},
+      {"id":17,"text":"当你遇到心理困扰时，首先会向谁求助？","type":"单选","options":["父母","同学或朋友","班主任或老师","学校心理老师","兄弟姐妹","自己承受不求助","网络或AI工具"],"required":true},
+      {"id":18,"text":"你认为学校对学生心理健康的重视程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不重视","2":"不太重视","3":"一般","4":"比较重视","5":"非常重视"},"required":true},
+      {"id":19,"text":"你是否参加过学校组织的心理健康课程或活动？","type":"单选","options":["经常参加","参加过几次","参加过一次","从未参加"],"required":true},
+      {"id":20,"text":"你最希望学校提供哪些心理支持服务？（可多选）","type":"多选","options":["定期心理健康课程","一对一心理咨询","压力管理团体辅导","考前心理辅导","心理健康知识讲座","匿名倾诉热线或信箱","心理健康主题活动（如心理剧）","其他"],"required":true}
+    ]},
+    {"id":4,"name":"家庭因素","questions":[
+      {"id":21,"text":"你与父母的关系整体如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"非常紧张","2":"比较紧张","3":"一般","4":"比较融洽","5":"非常融洽"},"required":true},
+      {"id":22,"text":"家长对你考试成绩的关注程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不关注","2":"不太关注","3":"一般","4":"比较关注","5":"过度关注，带来很大压力"},"required":true},
+      {"id":23,"text":"家长对你心理健康的关注程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不关注","2":"不太关注","3":"一般","4":"比较关注","5":"非常关注"},"required":true},
+      {"id":24,"text":"你认为父母对你的教育方式主要属于？","type":"单选","options":["民主型（尊重理解，平等沟通）","专制型（要求严格，较少听取意见）","溺爱型（过度保护，有求必应）","放任型（较少管束，各自独立）","冷漠型（缺乏关心和交流）"],"required":true},
+      {"id":25,"text":"你认为你的家庭氛围整体如何？","type":"单选","options":["非常融洽和谐","比较融洽","一般","比较紧张","非常紧张压抑"],"required":true},
+      {"id":26,"text":"你与父母每周沟通交流（除日常事务外）的频率约为？","type":"单选","options":["每天都会深入交流","每周3-5次","每周1-2次","几乎没有深入交流"],"required":true}
+    ]},
+    {"id":5,"name":"社交与情绪","questions":[
+      {"id":27,"text":"近期你经常出现以下哪些情绪状态？（可多选）","type":"多选","options":["心情愉快","平静稳定","焦虑紧张","情绪低落","烦躁易怒","孤独寂寞","迷茫无助","恐惧害怕","其他"],"required":true},
+      {"id":28,"text":"你最近两周的情绪稳定性如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"非常不稳定，经常大起大落","2":"不太稳定","3":"一般","4":"比较稳定","5":"非常稳定，情绪平稳"},"required":true},
+      {"id":29,"text":"你当前主要的心理困扰来源是什么？（可多选，限3项）","type":"多选","options":["学业压力","考试焦虑","睡眠不足","自我期望过高","社交困扰","亲子沟通困难","未来迷茫","外貌或身体形象","同伴竞争","家庭经济压力","其他"],"maxSelections":3,"required":true},
+      {"id":30,"text":"你与同学/朋友之间的关系如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"非常差，几乎没有朋友","2":"较差，朋友很少","3":"一般，有一些朋友","4":"较好，朋友较多","5":"非常好，有知心朋友"},"required":true},
+      {"id":31,"text":"你在学校是否经常感到孤独？","type":"单选","options":["总是感到孤独","经常感到孤独","有时感到孤独","很少感到孤独","从不感到孤独"],"required":true},
+      {"id":32,"text":"请你对自己目前的整体心理状态打分","type":"评分1-10","min":1,"max":10,"labels":{"1-2":"非常差，需要帮助","3-4":"较差","5-6":"一般","7-8":"较好","9-10":"非常好"},"required":true}
+    ]},
+    {"id":6,"name":"开放性问题","questions":[
+      {"id":33,"text":"你希望学校在心理健康方面提供哪些帮助或支持？请写下你的真实想法。","type":"文本","required":false},
+      {"id":34,"text":"你认为学校现有的心理健康课程或服务中最需要改进的地方是什么？","type":"文本","required":false},
+      {"id":35,"text":"你还有其他想说的话或建议吗？（关于学习、生活、心理等方面均可）","type":"文本","required":false}
+    ]}
+  ]
+};
+
+let currentModule = 0;
+let answers = {};
+
+function qId(q) { return 'q_' + q.id; }
+
+function getTypeBadge(type) {
+  const map = {'单选':'单选','多选':'多选','评分1-5':'评分题','评分1-10':'评分题','文本':'开放题'};
+  return map[type] || type;
+}
+
+function render() {
+  const nav = document.getElementById('moduleNav');
+  const body = document.getElementById('surveyBody');
+  nav.innerHTML = '';
+  body.innerHTML = '';
+
+  data.modules.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'module-btn' + (i === currentModule ? ' active' : '');
+    btn.textContent = m.name;
+    btn.onclick = () => goToModule(i);
+    nav.appendChild(btn);
+
+    const sec = document.createElement('div');
+    sec.className = 'module-section' + (i === currentModule ? ' active' : '');
+    sec.dataset.module = i;
+
+    m.questions.forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      const req = q.required ? '<span class="required">*</span>' : '';
+      card.innerHTML = '<div class="q-title">' + q.id + '. ' + q.text + req + '<span class="q-type-badge">' + getTypeBadge(q.type) + '</span></div><div class="options" id="opt_' + qId(q) + '"></div><div class="error-msg" id="err_' + qId(q) + '">请回答此题</div>';
+      sec.appendChild(card);
+    });
+    body.appendChild(sec);
+  });
+  renderQuestions();
+  updateProgress();
+}
+
+function renderQuestions() {
+  data.modules.forEach(m => {
+    m.questions.forEach(q => {
+      const cont = document.getElementById('opt_' + qId(q));
+      if (!cont) return;
+      if (q.type === '单选') renderRadio(cont, q);
+      else if (q.type === '多选') renderCheckbox(cont, q);
+      else if (q.type === '评分1-5' || q.type === '评分1-10') renderRating(cont, q);
+      else if (q.type === '文本') renderText(cont, q);
+    });
+  });
+}
+
+function renderRadio(cont, q) {
+  q.options.forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'option-item';
+    const id = qId(q) + '_' + o.replace(/\s+/g,'');
+    const checked = answers[qId(q)] === o ? ' checked' : '';
+    div.innerHTML = '<input type="radio" name="' + qId(q) + '" value="' + o + '" id="' + id + '"' + checked + '><label for="' + id + '">' + o + '</label>';
+    div.querySelector('input').addEventListener('change', () => {
+      answers[qId(q)] = o;
+      document.getElementById('err_' + qId(q)).style.display = 'none';
+      updateProgress();
+    });
+    cont.appendChild(div);
+  });
+}
+
+function renderCheckbox(cont, q) {
+  const maxSel = q.maxSelections || 0;
+  q.options.forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'option-item';
+    const id = qId(q) + '_' + o.replace(/\s+/g,'');
+    const arr = answers[qId(q)] || [];
+    const checked = arr.includes(o) ? ' checked' : '';
+    div.innerHTML = '<input type="checkbox" value="' + o + '" id="' + id + '"' + checked + '><label for="' + id + '">' + o + '</label>';
+    const cb = div.querySelector('input');
+    cb.addEventListener('change', () => {
+      let sel = answers[qId(q)] || [];
+      if (cb.checked) {
+        if (maxSel > 0 && sel.length >= maxSel) {
+          cb.checked = false;
+          alert('本题最多选择 ' + maxSel + ' 项');
+          return;
+        }
+        sel.push(o);
+      } else {
+        sel = sel.filter(v => v !== o);
+      }
+      answers[qId(q)] = sel;
+      document.getElementById('err_' + qId(q)).style.display = 'none';
+      updateProgress();
+    });
+    cont.appendChild(div);
+  });
+  if (maxSel > 0) {
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:12px;color:#888;margin-top:4px;';
+    hint.textContent = '限选 ' + maxSel + ' 项';
+    cont.appendChild(hint);
+  }
+}
+
+function renderRating(cont, q) {
+  const min = q.min, max = q.max;
+  const wrap = document.createElement('div');
+  wrap.className = 'rating-wrap';
+  const row = document.createElement('div');
+  row.className = 'rating-row';
+  for (let v = min; v <= max; v++) {
+    const item = document.createElement('div');
+    item.className = 'rating-item';
+    const id = qId(q) + '_' + v;
+    const checked = answers[qId(q)] === v ? ' checked' : '';
+    item.innerHTML = '<input type="radio" name="' + qId(q) + '" value="' + v + '" id="' + id + '"' + checked + '><label for="' + id + '">' + v + '</label>';
+    item.querySelector('input').addEventListener('change', () => {
+      answers[qId(q)] = v;
+      document.getElementById('err_' + qId(q)).style.display = 'none';
+      updateProgress();
+    });
+    row.appendChild(item);
+  }
+  wrap.appendChild(row);
+  if (q.labels) {
+    const labels = document.createElement('div');
+    labels.className = 'rating-labels';
+    const vals = Object.keys(q.labels).sort((a,b) => {
+      const ra = a.split('-').map(Number);
+      const rb = b.split('-').map(Number);
+      return ra[0] - rb[0];
+    });
+    vals.forEach(k => {
+      const span = document.createElement('span');
+      span.textContent = q.labels[k];
+      labels.appendChild(span);
+    });
+    wrap.appendChild(labels);
+  }
+  cont.appendChild(wrap);
+}
+
+function renderText(cont, q) {
+  const wrap = document.createElement('div');
+  wrap.className = 'textarea-wrap';
+  const val = answers[qId(q)] || '';
+  wrap.innerHTML = '<textarea placeholder="请在此输入你的回答..." maxlength="500">' + val + '</textarea>';
+  const ta = wrap.querySelector('textarea');
+  ta.addEventListener('input', () => {
+    answers[qId(q)] = ta.value;
+    const err = document.getElementById('err_' + qId(q));
+    if (err) err.style.display = 'none';
+    updateProgress();
+  });
+  const count = document.createElement('div');
+  count.style.cssText = 'font-size:12px;color:#999;text-align:right;margin-top:4px;';
+  count.id = 'cnt_' + qId(q);
+  count.textContent = '0 / 500';
+  ta.addEventListener('input', () => {
+    count.textContent = ta.value.length + ' / 500';
+    if (ta.value.length > 500) ta.value = ta.value.slice(0,500);
+  });
+  wrap.appendChild(count);
+  cont.appendChild(wrap);
+}
+
+function getAnsweredCount() {
+  let count = 0;
+  data.modules.forEach(m => {
+    m.questions.forEach(q => {
+      const val = answers[qId(q)];
+      if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') {
+        if (val !== undefined && val !== '') count++;
+      } else if (q.type === '多选') {
+        if (val && val.length > 0) count++;
+      } else if (q.type === '文本') {
+        if (val && val.trim().length > 0) count++;
+      }
+    });
+  });
+  return count;
+}
+
+function totalQuestions() {
+  let n = 0;
+  data.modules.forEach(m => n += m.questions.length);
+  return n;
+}
+
+function updateProgress() {
+  const total = totalQuestions();
+  const done = getAnsweredCount();
+  const pct = Math.round(done / total * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = '已完成：' + pct + '%';
+  const answeredBefore = done;
+  // find first unanswered for count display
+  let firstUnanswered = total;
+  let idx = 0;
+  data.modules.forEach(m => {
+    m.questions.forEach(q => {
+      idx++;
+      const val = answers[qId(q)];
+      if (idx <= firstUnanswered) {
+        let ok = false;
+        if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') ok = (val !== undefined && val !== '');
+        else if (q.type === '多选') ok = (val && val.length > 0);
+        else if (q.type === '文本') ok = (val && val.trim().length > 0);
+        else ok = true;
+        if (ok) firstUnanswered = idx;
+        else { firstUnanswered = idx; idx = 99999; }
+      }
+    });
+  });
+  if (firstUnanswered > total) firstUnanswered = total;
+  document.getElementById('progressCount').textContent = '第 ' + firstUnanswered + ' 题 / 共 ' + total + ' 题';
+}
+
+function goToModule(i) {
+  if (i < 0 || i >= data.modules.length) return;
+  currentModule = i;
+  document.querySelectorAll('.module-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.module-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.module-section[data-module="' + i + '"]').classList.add('active');
+  document.querySelectorAll('.module-btn')[i].classList.add('active');
+  document.getElementById('prevBtn').disabled = (i === 0);
+  const nextBtn = document.getElementById('nextBtn');
+  if (i === data.modules.length - 1) {
+    nextBtn.textContent = '提交问卷';
+    nextBtn.className = 'btn-submit';
+    nextBtn.onclick = submitSurvey;
+  } else {
+    nextBtn.textContent = '下一模块';
+    nextBtn.className = 'btn-next';
+    nextBtn.onclick = nextModule;
+  }
+  document.getElementById('footerNav').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function nextModule() {
+  if (!validateModule(currentModule)) return;
+  if (currentModule < data.modules.length - 1) goToModule(currentModule + 1);
+}
+
+function prevModule() {
+  if (currentModule > 0) goToModule(currentModule - 1);
+}
+
+function validateModule(i) {
+  let ok = true;
+  const m = data.modules[i];
+  m.questions.forEach(q => {
+    if (!q.required) return;
+    const val = answers[qId(q)];
+    let filled = false;
+    if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') filled = (val !== undefined && val !== '');
+    else if (q.type === '多选') filled = (val && val.length > 0);
+    else if (q.type === '文本') filled = (val && val.trim().length > 0);
+    if (!filled) {
+      document.getElementById('err_' + qId(q)).style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('err_' + qId(q)).style.display = 'none';
+    }
+  });
+  if (!ok) {
+    // scroll to first error
+    const firstErr = document.querySelector('#module-' + i + ' .error-msg[style*="block"]');
+    if (firstErr) firstErr.closest('.question-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  return ok;
+}
+
+function validateAll() {
+  let ok = true;
+  data.modules.forEach((m, i) => {
+    m.questions.forEach(q => {
+      if (!q.required) return;
+      const val = answers[qId(q)];
+      let filled = false;
+      if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') filled = (val !== undefined && val !== '');
+      else if (q.type === '多选') filled = (val && val.length > 0);
+      else if (q.type === '文本') filled = (val && val.trim().length > 0);
+      if (!filled) {
+        document.getElementById('err_' + qId(q)).style.display = 'block';
+        ok = false;
+      }
+    });
+  });
+  return ok;
+}
+
+function submitSurvey() {
+  // validate current module (last one: open questions are not required, so fine)
+  if (!validateModule(currentModule)) return;
+
+  document.getElementById('surveyBody').style.display = 'none';
+  document.getElementById('moduleNav').style.display = 'none';
+  document.getElementById('footerNav').style.display = 'none';
+  document.getElementById('resultPage').style.display = 'block';
+  document.querySelector('.progress-bar-wrap').style.display = 'none';
+
+  const summary = document.getElementById('resultSummary');
+  let html = '<table><tr><th>模块</th><th>完成题数</th><th>总题数</th></tr>';
+  let totalDone = 0, totalAll = 0;
+  data.modules.forEach(m => {
+    let done = 0, all = m.questions.length;
+    m.questions.forEach(q => {
+      const val = answers[qId(q)];
+      if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') { if (val !== undefined) done++; }
+      else if (q.type === '多选') { if (val && val.length > 0) done++; }
+      else if (q.type === '文本') { if (val && val.trim()) done++; }
+    });
+    totalDone += done; totalAll += all;
+    html += '<tr><td>' + m.name + '</td><td>' + done + '</td><td>' + all + '</td></tr>';
+  });
+  html += '<tr style="font-weight:600"><td>合计</td><td>' + totalDone + '</td><td>' + totalAll + '</td></tr></table>';
+  summary.innerHTML = html;
+}
+
+function exportCSV() {
+  const answers_flat = answers;
+  const BOM = '﻿';
+  let csv = BOM + '题号,题目,模块,题型,回答\n';
+  data.modules.forEach(m => {
+    m.questions.forEach(q => {
+      const val = answers_flat[qId(q)];
+      let display = '';
+      if (Array.isArray(val)) display = val.join('; ');
+      else if (val !== undefined && val !== null) display = String(val);
+      else display = '';
+      csv += q.id + ',"' + q.text + '","' + m.name + '","' + getTypeBadge(q.type) + '","' + display.replace(/"/g,'""') + '"\n';
+    });
+  });
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '心理健康问卷回答.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetSurvey() {
+  answers = {};
+  currentModule = 0;
+  document.getElementById('surveyBody').style.display = '';
+  document.getElementById('moduleNav').style.display = '';
+  document.getElementById('footerNav').style.display = '';
+  document.getElementById('resultPage').style.display = 'none';
+  document.querySelector('.progress-bar-wrap').style.display = '';
+  render();
+  goToModule(0);
+}
+
+render();
+goToModule(0);
+</script>
+</body>
+</html>
