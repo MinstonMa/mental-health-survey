@@ -142,8 +142,23 @@
     background: #fff; border-radius: 0 0 12px 12px;
     padding: 40px 28px; display: none; text-align: center;
   }
-  .result-page h2 { font-size: 22px; margin-bottom: 12px; color: #1a73e8; }
+  .result-page h2 { font-size: 24px; margin-bottom: 12px; color: #1a73e8; }
   .result-page p { font-size: 14px; color: #666; margin-bottom: 20px; }
+  .share-section {
+    background: #f5f8ff; border-radius: 8px; padding: 24px;
+    margin: 20px 0; text-align: center;
+  }
+  .share-section h3 { font-size: 16px; color: #333; margin-bottom: 12px; }
+  .share-url-box {
+    background: #fff; border: 1px solid #d0d0d0; border-radius: 6px;
+    padding: 12px 16px; font-size: 14px; color: #1a73e8;
+    word-break: break-all; margin-bottom: 12px;
+  }
+  .btn-copy {
+    padding: 8px 24px; background: #1a73e8; color: #fff;
+    border: none; border-radius: 6px; font-size: 14px; cursor: pointer;
+  }
+  .btn-copy:hover { background: #1557b0; }
   .result-summary {
     background: #f5f8ff; border-radius: 8px; padding: 20px;
     margin: 20px 0; text-align: left;
@@ -178,13 +193,13 @@
 <div class="container">
   <div class="header">
     <h1>哈尔滨市高中生心理健康现状调研问卷</h1>
-    <p>本问卷旨在了解哈尔滨市高中生的心理健康状况，为学校和社会提供有针对性的心理支持服务。<br>所有数据仅用于统计分析，匿名填写，请放心如实作答。感谢你的参与！</p>
+    <p>本问卷旨在了解哈尔滨市高中生的心理健康现状，为学校和社会提供更有针对性的心理支持服务。<br>问卷匿名填写，数据仅用于调研分析，请放心如实作答。感谢你的参与！</p>
   </div>
 
   <div class="progress-bar-wrap">
     <div class="progress-info">
       <span id="progressText">已完成：0%</span>
-      <span id="progressCount">第 1 题 / 共 35 题</span>
+      <span id="progressCount">第 1 题 / 共 33 题</span>
     </div>
     <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
   </div>
@@ -201,63 +216,68 @@
   <div class="result-page" id="resultPage">
     <h2>提交成功！</h2>
     <p>感谢你认真完成这份问卷，你的每一份回答都很有价值。</p>
+
+    <div class="share-section">
+      <h3>分享给更多同学填写</h3>
+      <div class="share-url-box" id="shareUrl">https://minstonma.github.io/mental-health-survey/</div>
+      <button class="btn-copy" onclick="copyShareUrl()">复制问卷链接</button>
+    </div>
+
     <div class="result-summary" id="resultSummary"></div>
-    <button class="btn-export" onclick="exportCSV()">导出回答为 CSV</button>
+    <button class="btn-export" onclick="exportCSV()">导出我的回答为 CSV</button>
     <br><br>
     <button class="btn-next" onclick="resetSurvey()" style="padding:8px 24px;font-size:13px;">重新填写</button>
   </div>
 </div>
 
 <script>
-const data = {
+const surveyData = {
   "title": "哈尔滨市高中生心理健康现状调研问卷",
   "modules": [
-    {"id":1,"name":"基本信息","questions":[
-      {"id":1,"text":"你的性别是？","type":"单选","options":["男","女","其他"],"required":true},
-      {"id":2,"text":"你所在的年级是？","type":"单选","options":["高一","高二","高三","其他"],"required":true},
-      {"id":3,"text":"你就读的学校类型是？","type":"单选","options":["省重点高中","市重点高中","普通高中","民办高中","职业高中"],"required":true},
-      {"id":4,"text":"你是否为独生子女？","type":"单选","options":["是","否"],"required":true},
-      {"id":5,"text":"你的长期居住地属于？","type":"单选","options":["城市市区","县城","乡镇","农村"],"required":true},
-      {"id":6,"text":"你是否是住校生？","type":"单选","options":["是","否"],"required":true}
+    {"name":"基本信息","questions":[
+      {"id":1,"text":"你的性别：","type":"单选","options":["男","女"],"required":true},
+      {"id":2,"text":"你所在的年级：","type":"单选","options":["高一","高二","高三"],"required":true},
+      {"id":3,"text":"你就读的学校类型：","type":"单选","options":["省级重点高中","市级重点高中","普通高中","职业高中"],"required":true},
+      {"id":4,"text":"你的生源地属于：","type":"单选","options":["城市","城镇（县城）","农村"],"required":true},
+      {"id":5,"text":"你是否为独生子女：","type":"单选","options":["是","否"],"required":true}
     ]},
-    {"id":2,"name":"学业压力与睡眠","questions":[
-      {"id":7,"text":"你每天平均学习时长（含上课、自习、作业）约为？","type":"单选","options":["少于8小时","8-10小时","10-12小时","12小时以上"],"required":true},
-      {"id":8,"text":"你当前的学业压力程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全没有压力","2":"压力较轻","3":"中等压力","4":"压力较大","5":"压力极大"},"required":true},
-      {"id":9,"text":"你面临考试时的焦虑程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不焦虑","2":"不太焦虑","3":"一般","4":"比较焦虑","5":"非常焦虑"},"required":true},
-      {"id":10,"text":"你平均每晚的睡眠时长约为？","type":"单选","options":["不足5小时","5-6小时","6-7小时","7-8小时","8小时以上"],"required":true},
-      {"id":11,"text":"你对自己的睡眠质量如何评价？","type":"评分1-5","min":1,"max":5,"labels":{"1":"很差","2":"较差","3":"一般","4":"较好","5":"很好"},"required":true},
-      {"id":12,"text":"影响你睡眠的主要原因是什么？（可多选）","type":"多选","options":["学业压力大","熬夜学习或刷题","使用电子产品（手机/游戏等）","寝室或家庭环境干扰","心理焦虑失眠","无睡眠问题","其他"],"required":true},
-      {"id":13,"text":"你对自己的成绩有怎样的自我要求？","type":"单选","options":["要求很高，必须名列前茅","要求较高，希望中上水平","要求一般，中等即可","要求较低，及格就好","无所谓"],"required":true}
+    {"name":"学业压力与睡眠","questions":[
+      {"id":6,"text":"你每天平均学习时长（含上课、自习、课外补习）：","type":"单选","options":["8小时以下","8-10小时","10-12小时","12小时以上"],"required":true},
+      {"id":7,"text":"你目前感受到的学业压力程度：","type":"评分","min":1,"max":5,"labels":{"1":"完全没有压力","5":"压力极大"},"required":true},
+      {"id":8,"text":"你的学业压力主要来源于哪些方面？（可多选）","type":"多选","options":["考试频繁","作业量大","成绩排名竞争","家长期望过高","自我要求过高","升学/高考压力","对未来迷茫","其他"],"required":true},
+      {"id":9,"text":"你每天平均睡眠时长：","type":"单选","options":["不足6小时","6-7小时","7-8小时","8小时以上"],"required":true},
+      {"id":10,"text":"你对自己睡眠质量的评价：","type":"评分","min":1,"max":5,"labels":{"1":"很差","5":"很好"},"required":true},
+      {"id":11,"text":"你是否因学业压力出现过以下身体不适？（可多选）","type":"多选","options":["头痛/头晕","失眠","食欲不振","胃痛/胃胀","心慌/心悸","脱发","没有出现过","其他"],"required":true}
     ]},
-    {"id":3,"name":"心理支持","questions":[
-      {"id":14,"text":"你是否了解学校提供的心理咨询服务？","type":"单选","options":["非常了解","基本了解","听说过但不太了解","完全不了解"],"required":true},
-      {"id":15,"text":"你是否有意愿使用学校的心理咨询服务？","type":"单选","options":["非常愿意","比较愿意","不确定","不太愿意","完全不愿意"],"required":true},
-      {"id":16,"text":"如果不愿意使用心理咨询服务，主要原因是什么？（可多选）","type":"多选","options":["担心被同学或老师知道","觉得没有什么效果","不知道预约和咨询流程","觉得问题不严重不需要","担心被贴上心理有问题的标签","更愿意自己消化或找朋友倾诉","其他"],"required":false},
-      {"id":17,"text":"当你遇到心理困扰时，首先会向谁求助？","type":"单选","options":["父母","同学或朋友","班主任或老师","学校心理老师","兄弟姐妹","自己承受不求助","网络或AI工具"],"required":true},
-      {"id":18,"text":"你认为学校对学生心理健康的重视程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不重视","2":"不太重视","3":"一般","4":"比较重视","5":"非常重视"},"required":true},
-      {"id":19,"text":"你是否参加过学校组织的心理健康课程或活动？","type":"单选","options":["经常参加","参加过几次","参加过一次","从未参加"],"required":true},
-      {"id":20,"text":"你最希望学校提供哪些心理支持服务？（可多选）","type":"多选","options":["定期心理健康课程","一对一心理咨询","压力管理团体辅导","考前心理辅导","心理健康知识讲座","匿名倾诉热线或信箱","心理健康主题活动（如心理剧）","其他"],"required":true}
+    {"name":"心理支持","questions":[
+      {"id":12,"text":"你所在的学校是否设有心理咨询室：","type":"单选","options":["有且正常开放","有但很少开放","没有","不清楚"],"required":true},
+      {"id":13,"text":"你是否愿意在需要时使用学校提供的心理咨询服务：","type":"单选","options":["愿意","不愿意","不确定"],"required":true},
+      {"id":14,"text":"你不愿意或不确定使用心理咨询服务的原因是什么？（可多选，上题选「愿意」可跳过）","type":"多选","options":["担心被同学或老师知道","觉得咨询没有效果","不知道预约流程和地点","担心隐私泄露","觉得自己问题不严重不需要","收费问题","其他"],"required":false},
+      {"id":15,"text":"当你遇到心理困扰时，通常会向谁倾诉？（可多选）","type":"多选","options":["朋友/同学","父亲/母亲","老师/班主任","心理咨询师","网友/线上社群","男/女朋友","不向任何人倾诉","其他"],"required":true},
+      {"id":16,"text":"你对学校目前提供的心理健康教育的整体评价：","type":"评分","min":1,"max":5,"labels":{"1":"非常不满意","5":"非常满意"},"required":true},
+      {"id":17,"text":"你希望学校开展哪些心理健康相关活动？（可多选）","type":"多选","options":["心理健康必修课程","团体心理辅导活动","一对一心理咨询","心理健康讲座","定期心理测评","减压放松活动（瑜伽/冥想等）","朋辈互助小组","不需要额外活动","其他"],"required":true}
     ]},
-    {"id":4,"name":"家庭因素","questions":[
-      {"id":21,"text":"你与父母的关系整体如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"非常紧张","2":"比较紧张","3":"一般","4":"比较融洽","5":"非常融洽"},"required":true},
-      {"id":22,"text":"家长对你考试成绩的关注程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不关注","2":"不太关注","3":"一般","4":"比较关注","5":"过度关注，带来很大压力"},"required":true},
-      {"id":23,"text":"家长对你心理健康的关注程度如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"完全不关注","2":"不太关注","3":"一般","4":"比较关注","5":"非常关注"},"required":true},
-      {"id":24,"text":"你认为父母对你的教育方式主要属于？","type":"单选","options":["民主型（尊重理解，平等沟通）","专制型（要求严格，较少听取意见）","溺爱型（过度保护，有求必应）","放任型（较少管束，各自独立）","冷漠型（缺乏关心和交流）"],"required":true},
-      {"id":25,"text":"你认为你的家庭氛围整体如何？","type":"单选","options":["非常融洽和谐","比较融洽","一般","比较紧张","非常紧张压抑"],"required":true},
-      {"id":26,"text":"你与父母每周沟通交流（除日常事务外）的频率约为？","type":"单选","options":["每天都会深入交流","每周3-5次","每周1-2次","几乎没有深入交流"],"required":true}
+    {"name":"家庭因素","questions":[
+      {"id":18,"text":"你的家庭结构：","type":"单选","options":["双亲家庭（父母同住）","单亲家庭（父母离异或一方去世）","重组家庭","留守家庭（父母外出务工）","其他"],"required":true},
+      {"id":19,"text":"父母对你的学习成绩期望程度：","type":"单选","options":["非常高，要求名列前茅","比较高，希望中上水平","适中，尽力就好","不太关注成绩"],"required":true},
+      {"id":20,"text":"父母对你心理健康的关注程度：","type":"评分","min":1,"max":5,"labels":{"1":"完全不关注","5":"非常关注"},"required":true},
+      {"id":21,"text":"你和父母（或其他监护人）的沟通频率：","type":"单选","options":["每天都有深入交流","每周交流几次","每周一次左右","很少沟通（每月1-2次）","几乎不沟通"],"required":true},
+      {"id":22,"text":"你和父母沟通时主要谈论的话题：（可多选）","type":"多选","options":["学习成绩和考试","日常生活和饮食","未来升学和职业规划","兴趣爱好和娱乐","心理感受和情绪","很少沟通没有固定话题","其他"],"required":true},
+      {"id":23,"text":"当你向父母倾诉压力或烦恼时，他们通常的反应是：","type":"单选","options":["耐心倾听并安慰我","帮我分析问题给出建议","批评我说我想太多","不管不问让我自己解决","鼓励我自己面对和解决","我从不向父母倾诉"],"required":true}
     ]},
-    {"id":5,"name":"社交与情绪","questions":[
-      {"id":27,"text":"近期你经常出现以下哪些情绪状态？（可多选）","type":"多选","options":["心情愉快","平静稳定","焦虑紧张","情绪低落","烦躁易怒","孤独寂寞","迷茫无助","恐惧害怕","其他"],"required":true},
-      {"id":28,"text":"你最近两周的情绪稳定性如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"非常不稳定，经常大起大落","2":"不太稳定","3":"一般","4":"比较稳定","5":"非常稳定，情绪平稳"},"required":true},
-      {"id":29,"text":"你当前主要的心理困扰来源是什么？（可多选，限3项）","type":"多选","options":["学业压力","考试焦虑","睡眠不足","自我期望过高","社交困扰","亲子沟通困难","未来迷茫","外貌或身体形象","同伴竞争","家庭经济压力","其他"],"maxSelections":3,"required":true},
-      {"id":30,"text":"你与同学/朋友之间的关系如何？","type":"评分1-5","min":1,"max":5,"labels":{"1":"非常差，几乎没有朋友","2":"较差，朋友很少","3":"一般，有一些朋友","4":"较好，朋友较多","5":"非常好，有知心朋友"},"required":true},
-      {"id":31,"text":"你在学校是否经常感到孤独？","type":"单选","options":["总是感到孤独","经常感到孤独","有时感到孤独","很少感到孤独","从不感到孤独"],"required":true},
-      {"id":32,"text":"请你对自己目前的整体心理状态打分","type":"评分1-10","min":1,"max":10,"labels":{"1-2":"非常差，需要帮助","3-4":"较差","5-6":"一般","7-8":"较好","9-10":"非常好"},"required":true}
+    {"name":"社交与情绪","questions":[
+      {"id":24,"text":"你在学校有多少关系密切、可以交心的朋友：","type":"单选","options":["没有","1-2个","3-5个","5个以上"],"required":true},
+      {"id":25,"text":"你在学校里的人际关系总体状况：","type":"评分","min":1,"max":5,"labels":{"1":"非常差","5":"非常好"},"required":true},
+      {"id":26,"text":"近一个月内，你经常出现以下哪些情绪？（可多选）","type":"多选","options":["焦虑紧张","抑郁低落","烦躁易怒","孤独寂寞","愤怒不满","无聊空虚","平静放松","愉快开心","其他"],"required":true},
+      {"id":27,"text":"你当前主要的心理困扰来源于：（可多选，限选3项）","type":"多选","maxSelections":3,"options":["学业压力","考试焦虑","睡眠不足","自我期望过高","社交与人际关系困扰","亲子沟通困难","对未来的迷茫","外貌/体型焦虑","家庭经济压力","情绪管理困难","其他"],"required":true},
+      {"id":28,"text":"你对自己情绪调节和管理能力的评价：","type":"评分","min":1,"max":5,"labels":{"1":"非常差","5":"非常好"},"required":true},
+      {"id":29,"text":"你通常采用哪些方式缓解负面情绪？（可多选）","type":"多选","options":["听音乐/唱歌","运动/跑步","打游戏","找朋友倾诉","写日记/画画","吃东西","睡觉","刷手机/看视频","自我消化/憋着","寻求心理咨询帮助","其他"],"required":true},
+      {"id":30,"text":"整体而言，你对自己目前心理健康状况的评价：","type":"评分","min":1,"max":5,"labels":{"1":"非常差","5":"非常好"},"required":true}
     ]},
-    {"id":6,"name":"开放性问题","questions":[
-      {"id":33,"text":"你希望学校在心理健康方面提供哪些帮助或支持？请写下你的真实想法。","type":"文本","required":false},
-      {"id":34,"text":"你认为学校现有的心理健康课程或服务中最需要改进的地方是什么？","type":"文本","required":false},
-      {"id":35,"text":"你还有其他想说的话或建议吗？（关于学习、生活、心理等方面均可）","type":"文本","required":false}
+    {"name":"开放性问题","questions":[
+      {"id":31,"text":"你希望学校在心理健康方面提供哪些具体的帮助或支持？","type":"文本","required":false},
+      {"id":32,"text":"你认为学校目前的心理健康课程或服务中，最需要改进的地方是什么？","type":"文本","required":false},
+      {"id":33,"text":"你最想对父母或老师说的一句心里话是什么？（关于心理健康方面）","type":"文本","required":false}
     ]}
   ]
 };
@@ -268,7 +288,7 @@ let answers = {};
 function qId(q) { return 'q_' + q.id; }
 
 function getTypeBadge(type) {
-  const map = {'单选':'单选','多选':'多选','评分1-5':'评分题','评分1-10':'评分题','文本':'开放题'};
+  const map = {'单选':'单选','多选':'多选','评分':'评分题','文本':'开放题'};
   return map[type] || type;
 }
 
@@ -278,7 +298,7 @@ function render() {
   nav.innerHTML = '';
   body.innerHTML = '';
 
-  data.modules.forEach((m, i) => {
+  surveyData.modules.forEach((m, i) => {
     const btn = document.createElement('button');
     btn.className = 'module-btn' + (i === currentModule ? ' active' : '');
     btn.textContent = m.name;
@@ -303,13 +323,13 @@ function render() {
 }
 
 function renderQuestions() {
-  data.modules.forEach(m => {
+  surveyData.modules.forEach(m => {
     m.questions.forEach(q => {
       const cont = document.getElementById('opt_' + qId(q));
       if (!cont) return;
       if (q.type === '单选') renderRadio(cont, q);
       else if (q.type === '多选') renderCheckbox(cont, q);
-      else if (q.type === '评分1-5' || q.type === '评分1-10') renderRating(cont, q);
+      else if (q.type === '评分') renderRating(cont, q);
       else if (q.type === '文本') renderText(cont, q);
     });
   });
@@ -390,16 +410,15 @@ function renderRating(cont, q) {
   if (q.labels) {
     const labels = document.createElement('div');
     labels.className = 'rating-labels';
-    const vals = Object.keys(q.labels).sort((a,b) => {
-      const ra = a.split('-').map(Number);
-      const rb = b.split('-').map(Number);
-      return ra[0] - rb[0];
-    });
-    vals.forEach(k => {
-      const span = document.createElement('span');
-      span.textContent = q.labels[k];
-      labels.appendChild(span);
-    });
+    const minSpan = document.createElement('span');
+    minSpan.textContent = q.labels['1'];
+    const midSpan = document.createElement('span');
+    midSpan.textContent = q.labels['3'] || '';
+    const maxSpan = document.createElement('span');
+    maxSpan.textContent = q.labels[max];
+    labels.appendChild(minSpan);
+    labels.appendChild(midSpan);
+    labels.appendChild(maxSpan);
     wrap.appendChild(labels);
   }
   cont.appendChild(wrap);
@@ -431,10 +450,10 @@ function renderText(cont, q) {
 
 function getAnsweredCount() {
   let count = 0;
-  data.modules.forEach(m => {
+  surveyData.modules.forEach(m => {
     m.questions.forEach(q => {
       const val = answers[qId(q)];
-      if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') {
+      if (q.type === '单选' || q.type === '评分') {
         if (val !== undefined && val !== '') count++;
       } else if (q.type === '多选') {
         if (val && val.length > 0) count++;
@@ -448,7 +467,7 @@ function getAnsweredCount() {
 
 function totalQuestions() {
   let n = 0;
-  data.modules.forEach(m => n += m.questions.length);
+  surveyData.modules.forEach(m => n += m.questions.length);
   return n;
 }
 
@@ -458,31 +477,11 @@ function updateProgress() {
   const pct = Math.round(done / total * 100);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = '已完成：' + pct + '%';
-  const answeredBefore = done;
-  // find first unanswered for count display
-  let firstUnanswered = total;
-  let idx = 0;
-  data.modules.forEach(m => {
-    m.questions.forEach(q => {
-      idx++;
-      const val = answers[qId(q)];
-      if (idx <= firstUnanswered) {
-        let ok = false;
-        if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') ok = (val !== undefined && val !== '');
-        else if (q.type === '多选') ok = (val && val.length > 0);
-        else if (q.type === '文本') ok = (val && val.trim().length > 0);
-        else ok = true;
-        if (ok) firstUnanswered = idx;
-        else { firstUnanswered = idx; idx = 99999; }
-      }
-    });
-  });
-  if (firstUnanswered > total) firstUnanswered = total;
-  document.getElementById('progressCount').textContent = '第 ' + firstUnanswered + ' 题 / 共 ' + total + ' 题';
+  document.getElementById('progressCount').textContent = '已答 ' + done + ' 题 / 共 ' + total + ' 题';
 }
 
 function goToModule(i) {
-  if (i < 0 || i >= data.modules.length) return;
+  if (i < 0 || i >= surveyData.modules.length) return;
   currentModule = i;
   document.querySelectorAll('.module-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.module-btn').forEach(b => b.classList.remove('active'));
@@ -490,7 +489,7 @@ function goToModule(i) {
   document.querySelectorAll('.module-btn')[i].classList.add('active');
   document.getElementById('prevBtn').disabled = (i === 0);
   const nextBtn = document.getElementById('nextBtn');
-  if (i === data.modules.length - 1) {
+  if (i === surveyData.modules.length - 1) {
     nextBtn.textContent = '提交问卷';
     nextBtn.className = 'btn-submit';
     nextBtn.onclick = submitSurvey;
@@ -504,7 +503,7 @@ function goToModule(i) {
 
 function nextModule() {
   if (!validateModule(currentModule)) return;
-  if (currentModule < data.modules.length - 1) goToModule(currentModule + 1);
+  if (currentModule < surveyData.modules.length - 1) goToModule(currentModule + 1);
 }
 
 function prevModule() {
@@ -513,12 +512,12 @@ function prevModule() {
 
 function validateModule(i) {
   let ok = true;
-  const m = data.modules[i];
+  const m = surveyData.modules[i];
   m.questions.forEach(q => {
     if (!q.required) return;
     const val = answers[qId(q)];
     let filled = false;
-    if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') filled = (val !== undefined && val !== '');
+    if (q.type === '单选' || q.type === '评分') filled = (val !== undefined && val !== '');
     else if (q.type === '多选') filled = (val && val.length > 0);
     else if (q.type === '文本') filled = (val && val.trim().length > 0);
     if (!filled) {
@@ -527,30 +526,6 @@ function validateModule(i) {
     } else {
       document.getElementById('err_' + qId(q)).style.display = 'none';
     }
-  });
-  if (!ok) {
-    // scroll to first error
-    const firstErr = document.querySelector('#module-' + i + ' .error-msg[style*="block"]');
-    if (firstErr) firstErr.closest('.question-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  return ok;
-}
-
-function validateAll() {
-  let ok = true;
-  data.modules.forEach((m, i) => {
-    m.questions.forEach(q => {
-      if (!q.required) return;
-      const val = answers[qId(q)];
-      let filled = false;
-      if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') filled = (val !== undefined && val !== '');
-      else if (q.type === '多选') filled = (val && val.length > 0);
-      else if (q.type === '文本') filled = (val && val.trim().length > 0);
-      if (!filled) {
-        document.getElementById('err_' + qId(q)).style.display = 'block';
-        ok = false;
-      }
-    });
   });
   return ok;
 }
@@ -568,7 +543,7 @@ async function submitSurvey() {
 
   try {
     const responseData = {};
-    data.modules.forEach(m => {
+    surveyData.modules.forEach(m => {
       m.questions.forEach(q => {
         responseData[q.id] = answers[qId(q)] || (q.type === '多选' ? [] : '');
       });
@@ -592,11 +567,11 @@ async function submitSurvey() {
   const summary = document.getElementById('resultSummary');
   let html = '<table><tr><th>模块</th><th>完成题数</th><th>总题数</th></tr>';
   let totalDone = 0, totalAll = 0;
-  data.modules.forEach(m => {
+  surveyData.modules.forEach(m => {
     let done = 0, all = m.questions.length;
     m.questions.forEach(q => {
       const val = answers[qId(q)];
-      if (q.type === '单选' || q.type === '评分1-5' || q.type === '评分1-10') { if (val !== undefined) done++; }
+      if (q.type === '单选' || q.type === '评分') { if (val !== undefined) done++; }
       else if (q.type === '多选') { if (val && val.length > 0) done++; }
       else if (q.type === '文本') { if (val && val.trim()) done++; }
     });
@@ -608,12 +583,11 @@ async function submitSurvey() {
 }
 
 function exportCSV() {
-  const answers_flat = answers;
   const BOM = '﻿';
   let csv = BOM + '题号,题目,模块,题型,回答\n';
-  data.modules.forEach(m => {
+  surveyData.modules.forEach(m => {
     m.questions.forEach(q => {
-      const val = answers_flat[qId(q)];
+      const val = answers[qId(q)];
       let display = '';
       if (Array.isArray(val)) display = val.join('; ');
       else if (val !== undefined && val !== null) display = String(val);
@@ -627,6 +601,15 @@ function exportCSV() {
   a.href = url; a.download = '心理健康问卷回答.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function copyShareUrl() {
+  const url = document.getElementById('shareUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '已复制！';
+    setTimeout(() => { btn.textContent = '复制问卷链接'; }, 2000);
+  });
 }
 
 function resetSurvey() {
